@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hangaroo - tinoy</title>
+    <link rel="stylesheet" href="css\main.css" />
+  </head>
+  <body>
+    <main>
+      <div id="hangaroo">
+        <img id="hangarooimg" src="img\hangaroo.png" alt="hangaroo" />
+      </div>
+      <div id="container">
+        <div id="container2">
+          <div id="missed"></div>
+          <div id="filler"></div>
+          <div id="wins"></div>
+        </div>
+        <div id="keyboard">
+          <div id="keyboard1"></div>
+          <div id="keyboard2"></div>
+        </div>
+        <div id="category"></div>
+        <div id="arena">
+          <div id="row0"></div>
+          <div id="row1"></div>
+          <div id="row2"></div>
+          <div id="row3"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="scripts\global.js"></script>
+    <script src="scripts\display.js"></script>
+    <script src="scripts\question.js"></script>
+
+    <script>
+      startWithDefault();
+
+      /* 
+        replaces a letter to an underscore in question.answer
+      */
+
+      function replaceAll(word, letter) {
+        let findLetter = new RegExp(letter, "g");
+        return word.replace(findLetter, "_");
+      }
+
+      /*
+        starts game with all default values (start from scratch)
+      */
+
+      function startWithDefault() {
+        checkLetter = [0, 0, 0, 0];
+        winLose = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        items = [];
+        lost = 0;
+        numberOfWins = 0;
+
+        init();
+        question = getRandomQuestion();
+        question.answer = replaceAll(question.answer, " ");
+        initCategory(question.category);
+
+        let keys = document.querySelectorAll(".key");
+
+        for (key of keys) {
+          key.addEventListener("click", ClickEvent);
+        }
+      }
+
+      /*
+        starts game with an added win in win/lose column
+      */
+
+      function startWithAddedWin() {
+        checkLetter = [0, 0, 0, 0];
+        items = [];
+        lost = 0;
+
+        init();
+        question = getRandomQuestion();
+        question.answer = replaceAll(question.answer, " ");
+        initCategory(question.category);
+
+        let keys = document.querySelectorAll(".key");
+
+        for (key of keys) {
+          key.addEventListener("click", ClickEvent);
+        }
+      }
+
+      /*
+        Click event for "a" to "z"
+      */
+
+      function ClickEvent(e) {
+        let letter = e.target.alt.toLowerCase();
+        let id = "keyid" + letter;
+        let img = document.querySelector("#" + id);
+        let found = false;
+
+        for (item of items) {
+          if (item.letter == letter) {
+            found = true;
+            let div = document.querySelector("#" + item.ident);
+            let img = document.createElement("img");
+            img.src = "img\\" + letter + ".png";
+            img.style.width = "48px";
+            div.append(img);
+          }
+        }
+
+        question.answer = replaceAll(question.answer, letter);
+
+        img.removeEventListener("click", ClickEvent);
+        img.src = "img\\" + "d" + letter + ".png";
+
+        if (found) {
+          let counterUnderscore = 0;
+          for (letter of question.answer) {
+            if (letter == "_") {
+              counterUnderscore++;
+            }
+          }
+
+          if (counterUnderscore == question.answer.length) {
+            winLose[numberOfWins] = 1;
+            numberOfWins++;
+            startWithAddedWin();
+          }
+        } else {
+          checkLetter[lost] = 1;
+          initMissed();
+          lost++;
+
+          if (lost >= checkLetter.length) {
+            let ans = prompt("Do you want to play again?");
+            ans.toLowerCase();
+            if (ans == "y") {
+              let keys = document.querySelectorAll(".key");
+              for (key of keys) {
+                key.removeEventListener("click", ClickEvent);
+              }
+              startWithDefault();
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
